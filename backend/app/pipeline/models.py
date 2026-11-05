@@ -48,3 +48,4 @@ def clear_model_caches() -> None:
     """Clear singleton caches (primarily for unit tests and resource reclamation)."""
     get_whisper_model.cache_clear()
     get_ocr_reader.cache_clear()
+

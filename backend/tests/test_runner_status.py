@@ -85,3 +85,4 @@ def test_runner_failed_when_both_media_and_caption_fail(
     assert result.extraction is None
     assert len(result.errors) > 0
     assert not created_dir.exists()
+

@@ -23,3 +23,4 @@ class MediaUnavailable(ReelBriefError):
 
 class FfmpegMissing(ReelBriefError):
     """Raised when ffmpeg is not available on PATH."""
+

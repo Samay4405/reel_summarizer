@@ -33,3 +33,4 @@ def test_error_hierarchy() -> None:
 def test_map_download_error(msg: str, expected_cls: type) -> None:
     mapped = _map_download_error(Exception(msg))
     assert isinstance(mapped, expected_cls)
+

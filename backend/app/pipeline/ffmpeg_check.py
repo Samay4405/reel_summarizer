@@ -24,3 +24,4 @@ def ensure_ffmpeg() -> None:
             "  macOS:   brew install ffmpeg\n"
             "  Linux:   sudo apt update && sudo apt install -y ffmpeg"
         )
+

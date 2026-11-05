@@ -20,3 +20,4 @@ def test_ensure_ffmpeg_raises_on_missing(monkeypatch: pytest.MonkeyPatch) -> Non
     with pytest.raises(FfmpegMissing) as exc_info:
         ensure_ffmpeg()
     assert "winget install Gyan.FFmpeg" in str(exc_info.value)
+
