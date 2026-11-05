@@ -4,7 +4,6 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-
 Category = Literal[
     "coding",
     "ai_tools",
@@ -20,6 +19,7 @@ Category = Literal[
 ]
 Confidence = Literal["high", "medium", "low"]
 YouTubeType = Literal["video", "playlist", "channel"]
+ReelStatus = Literal["pending", "quick_ready", "processing", "processed", "partial", "failed"]
 
 
 class Tool(BaseModel):
@@ -73,10 +73,11 @@ class Extraction(BaseModel):
 class PipelineResult(BaseModel):
     shortcode: str
     url: str
+    status: ReelStatus = "processed"
     caption: str = ""
     uploader: str | None = None
     transcript: str = ""
     ocr_text: str = ""
     language: str | None = None
-    extraction: Extraction
+    extraction: Extraction | None = None
     errors: list[str] = Field(default_factory=list)

@@ -1,22 +1,26 @@
-"""Audio transcription stage."""
+"""Audio transcription stage using faster-whisper."""
 
 from pathlib import Path
 
+from app.pipeline.ffmpeg_check import ensure_ffmpeg
+from app.pipeline.models import get_whisper_model
 
-def transcribe_audio(audio_path: Path | None, model_name: str = "small") -> tuple[str, str | None]:
-    """Transcribe audio and return ``(text, detected_language)``.
 
-    Missing audio is a valid no-speech result.
+def transcribe_audio(
+    media_path: Path | None,
+    model_name: str | None = None,
+    device: str | None = None,
+) -> tuple[str, str | None]:
+    """Transcribe speech from a media file (video container or audio file).
+
+    Returns ``(transcript, detected_language)``.
+    Missing media is treated as a valid no-speech result.
     """
-    if audio_path is None or not audio_path.exists():
+    if media_path is None or not media_path.exists():
         return "", None
-    try:
-        from faster_whisper import WhisperModel
-    except ImportError as exc:
-        raise RuntimeError(
-            "faster-whisper is required for transcription. Install backend/requirements.txt."
-        ) from exc
 
-    model = WhisperModel(model_name)
-    segments, info = model.transcribe(str(audio_path))
-    return " ".join(segment.text.strip() for segment in segments).strip(), info.language
+    ensure_ffmpeg()
+    model = get_whisper_model(model_name=model_name, device=device)
+    segments, info = model.transcribe(str(media_path))
+    text = " ".join(segment.text.strip() for segment in segments).strip()
+    return text, getattr(info, "language", None)

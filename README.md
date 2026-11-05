@@ -1,40 +1,58 @@
 # ReelBrief
 
 ReelBrief turns saved Instagram reel links into short summaries and actionable resources.
-Phase 1 provides the testable processing pipeline and CLI. Later phases will add the API,
-Telegram bot, web app, and playlist integrations.
+Phase 1 provides the testable processing pipeline and CLI. ReelBrief v2 introduces a Chrome Extension backed by the local FastAPI pipeline.
 
-## Phase 1 setup
+## Prerequisites
 
-Prerequisites: Python 3.11+, `ffmpeg` on `PATH`, and (for live processing) enough disk/RAM
-for the configured faster-whisper and EasyOCR models.
+1. **Python 3.11 or 3.12** in a virtual environment (Python 3.13 currently has wheel compatibility limitations on Windows for torch/ctranslate2).
+2. **`ffmpeg` on system `PATH`**:
+   - **Windows**: `winget install Gyan.FFmpeg` (or `choco install ffmpeg` / `scoop install ffmpeg`)
+   - **macOS**: `brew install ffmpeg`
+   - **Linux**: `sudo apt update && sudo apt install -y ffmpeg`
+3. (For live processing) Sufficient disk space and RAM for the configured faster-whisper and EasyOCR models.
+
+## Setup
 
 ```powershell
 python -m venv .venv
 .venv\Scripts\Activate.ps1
 pip install -r backend\requirements.txt
-$env:PYTHONPATH = "backend"
+pip install --no-build-isolation -e .
 ```
 
-Copy `backend\.env.example` to `.env` and set `ANTHROPIC_API_KEY` for Claude extraction.
-Without a key, the CLI uses a deterministic offline fallback so URL and cleanup behavior can
-be tested without external services.
-
-Run the CLI:
+Copy `backend\.env.example` to `.env` and set `ANTHROPIC_API_KEY` for Claude extraction:
 
 ```powershell
-$env:PYTHONPATH = "backend"
+cp backend\.env.example .env
+```
+
+Without an API key, the pipeline uses a deterministic offline fallback so URL normalization, media cleanup, and error handling can be tested without external services.
+
+## Running Tests
+
+Run the full unit test suite from the repository root:
+
+```powershell
+pytest
+```
+
+## Running the CLI
+
+Run the pipeline from the command line:
+
+```powershell
 python -m app.cli https://www.instagram.com/reel/SHORTCODE/
 ```
 
-Run tests:
+Options:
+- `--caption "..."`: Provide a caption extracted directly from the web page (enables `partial` extraction if media download is blocked).
+- `--uploader "username"`: Associate uploader metadata.
+- `--cookies-file "data/cookies.txt"`: Path to Netscape cookies file for authenticated Instagram downloads.
+- `--thumbnail-dir "data/thumbnails"`: Directory where 480x480 thumbnails are retained.
 
-```powershell
-$env:PYTHONPATH = "backend"
-pytest backend\tests
-```
+## Privacy & Storage Constraints
 
-The downloader uses a temporary directory and removes it in `finally`, including after
-failures. Only the thumbnail is retained under `data\thumbnails`; video files are not stored.
-This is a personal-use tool. Instagram's terms apply to the download step; it does not log
-into Instagram, bypass access controls, scrape at scale, or process private reels.
+- Video media is strictly written to an ephemeral temporary directory and purged in `finally` blocks upon both success and failure.
+- Only the 480x480 thumbnail is retained under `data\thumbnails`; raw video files are **never** stored permanently on disk.
+- ReelBrief is a personal-use tool. Instagram's terms of service apply to the download step; it avoids mass scraping, fingerprint evasion, or accessing private reels.
